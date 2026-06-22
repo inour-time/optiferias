@@ -1,0 +1,159 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #1A1A1A;
+  background: #F6F6F4;
+  line-height: 1.6;
+}
+
+/* Split Layout */
+.app {
+  display: flex;
+  min-height: 100vh;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Sidebar - Configuração */
+.app-sidebar {
+  width: 340px;
+  min-width: 340px;
+  padding: 32px 24px;
+  border-right: 1px solid #DADADA;
+  background: #fff;
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.app-logo-icon {
+  font-size: 22px;
+  color: #1D6F42;
+}
+
+.app-logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1A1A1A;
+  letter-spacing: -0.3px;
+}
+
+/* Main - Resultados */
+.app-main {
+  flex: 1;
+  padding: 32px 40px;
+  overflow-y: auto;
+}
+
+.app-header {
+  margin-bottom: 28px;
+}
+
+.app-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1A1A1A;
+  letter-spacing: -0.4px;
+  margin-bottom: 4px;
+}
+
+.app-subtitle {
+  font-size: 15px;
+  color: #666;
+  font-weight: 400;
+}
+
+/* Loading */
+.app-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  background: #fff;
+  border: 1px solid #DADADA;
+  border-radius: 8px;
+  color: #666;
+  font-size: 14px;
+}
+
+.app-loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #DADADA;
+  border-top-color: #1D6F42;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Tabs */
+.app-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: #fff;
+  border: 1px solid #DADADA;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.app-tab {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #666;
+  font-family: inherit;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.app-tab.active {
+  background: #1D6F42;
+  color: #fff;
+}
+
+.app-tab:hover:not(.active) {
+  background: #f0f0ee;
+  color: #1A1A1A;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+  .app {
+    flex-direction: column;
+  }
+  .app-sidebar {
+    width: 100%;
+    min-width: unset;
+    border-right: none;
+    border-bottom: 1px solid #DADADA;
+    padding: 20px 16px;
+  }
+  .app-main {
+    padding: 24px 16px;
+  }
+}

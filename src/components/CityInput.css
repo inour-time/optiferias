@@ -1,0 +1,42 @@
+.ci-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.ci-input {
+  width: 100%;
+}
+
+.ci-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #DADADA;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.ci-option {
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #1A1A1A;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.ci-option.highlight {
+  background: #E8F5EE;
+  color: #1D6F42;
+}
+
+.ci-option:hover {
+  background: #f0f0ee;
+}

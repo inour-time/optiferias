@@ -1,0 +1,142 @@
+.rc-card {
+  background: #fff;
+  border: 1px solid #DADADA;
+  border-radius: 10px;
+  padding: 20px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+
+.rc-card:hover {
+  border-color: #1D6F42;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.rc-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.rc-rank {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1D6F42;
+}
+
+.rc-split {
+  font-size: 12px;
+  font-weight: 500;
+  color: #888;
+  background: #F6F6F4;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.rc-efficiency {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1D6F42;
+}
+
+.rc-metrics {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.rc-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 16px;
+  background: #F9F9F7;
+  border-radius: 8px;
+  flex: 1;
+}
+
+.rc-metric-highlight {
+  background: #E8F5EE;
+}
+
+.rc-metric-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1A1A1A;
+  line-height: 1.2;
+}
+
+.rc-metric-highlight .rc-metric-value {
+  color: #1D6F42;
+}
+
+.rc-metric-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.rc-periods {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.rc-period {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.rc-period-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.rc-period-date {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.rc-period-detail {
+  font-size: 12px;
+  color: #888;
+}
+
+.rc-minibar {
+  display: flex;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.rc-minibar-month {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rc-minibar-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: #aaa;
+  text-transform: uppercase;
+}
+
+.rc-minibar-cells {
+  font-size: 10px;
+  font-family: monospace;
+  color: #1D6F42;
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
