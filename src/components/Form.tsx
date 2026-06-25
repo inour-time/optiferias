@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { generateSplits, parseCustomSplit } from '../engine/splits'
 import { SplitPattern, BRAZILIAN_STATES } from '../engine/types'
 import CityInput from './CityInput'
@@ -24,16 +24,18 @@ export default function Form({ onCalculate, loading }: FormProps) {
   const [customInput, setCustomInput] = useState('')
   const [customError, setCustomError] = useState<string | null>(null)
   const [customSplit, setCustomSplit] = useState<SplitPattern | null>(null)
+  const userChangedSplits = useRef(false)
 
   const currentSplits = generateSplits(balance)
 
   useEffect(() => {
-    if (currentSplits.length > 0 && selectedLabels.size === 0) {
+    if (currentSplits.length > 0 && selectedLabels.size === 0 && !userChangedSplits.current) {
       setSelectedLabels(new Set([currentSplits[0].label]))
     }
   }, [currentSplits])
 
   const handleBalanceChange = useCallback((val: number) => {
+    userChangedSplits.current = false
     setBalance(val)
     setSelectedLabels(new Set())
     setCustomInput('')
@@ -42,6 +44,7 @@ export default function Form({ onCalculate, loading }: FormProps) {
   }, [])
 
   const toggleSplit = useCallback((label: string) => {
+    userChangedSplits.current = true
     setSelectedLabels((prev) => {
       const next = new Set(prev)
       if (next.has(label)) next.delete(label)

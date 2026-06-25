@@ -50,3 +50,6 @@ Thumbs.db
 *.tsbuildinfo
 tsconfig.tsbuildinfo
 node_modules/.tmp/
+
+# Preplanning
+preplanning/
