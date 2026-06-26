@@ -23,6 +23,9 @@ export default function ResultList({ scenarios, onSelect }: ResultListProps) {
           period1={s.period1}
           period2={s.period2}
           onSelect={onSelect}
+          sellDays={s.sellDays}
+          keepDays={s.keepDays}
+          keepDeadline={s.keepDeadline}
         />
       ))}
     </div>

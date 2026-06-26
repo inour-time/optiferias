@@ -58,6 +58,15 @@ interface ResultCardProps {
   period1: PeriodResult
   period2: PeriodResult
   onSelect: (rank: number) => void
+  sellDays: number
+  keepDays: number
+  keepDeadline?: string
+}
+
+function fmtDate(dateStr: string): string {
+  const [y, m, d] = dateStr.split('-')
+  const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+  return `${parseInt(d)} ${meses[parseInt(m) - 1]} de ${y}`
 }
 
 export default function ResultCard({
@@ -69,9 +78,13 @@ export default function ResultCard({
   period1,
   period2,
   onSelect,
+  sellDays,
+  keepDays,
+  keepDeadline,
 }: ResultCardProps) {
   const isSingle = period2.length === 0
   const daysSaved = totalBreakDays - vacationDaysSpent
+  const hasSellKeep = sellDays > 0 || keepDays > 0
 
   return (
     <div className="rc-card" onClick={() => onSelect(rank)}>
@@ -97,6 +110,36 @@ export default function ResultCard({
           <span className="rc-metric-label">dias extras</span>
         </div>
       </div>
+
+      {hasSellKeep && (
+        <div className="rc-sellkeep">
+          <span className="rc-sellkeep-item">
+            <strong>{vacationDaysSpent}</strong> tirados
+          </span>
+          <span className="rc-sellkeep-sep">|</span>
+          <span className="rc-sellkeep-item">
+            <strong>{sellDays}</strong> vendidos
+          </span>
+          {keepDays > 0 && (
+            <>
+              <span className="rc-sellkeep-sep">|</span>
+              <span className="rc-sellkeep-item rc-sellkeep-keep">
+                <strong>{keepDays}</strong> guardados
+                {keepDeadline && (
+                  <span className="rc-sellkeep-deadline">
+                    (válido até {fmtDate(keepDeadline)})
+                  </span>
+                )}
+                {!keepDeadline && (
+                  <span className="rc-sellkeep-deadline rc-sellkeep-deadline-warn">
+                    (marque antes do próximo período)
+                  </span>
+                )}
+              </span>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="rc-periods">
         <div className="rc-period">
