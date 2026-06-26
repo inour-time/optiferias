@@ -8,19 +8,17 @@ function formatDate(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
-function parseDate(s: string): Date {
-  const [y, m, d] = s.split('-').map(Number)
-  return new Date(y, m - 1, d)
-}
-
 export function buildYearCalendar(
   year: number,
-  holidays: Holiday[]
+  holidays: Holiday[],
+  compensatoryDays?: string[]
 ): DayInfo[] {
   const holidayMap = new Map<string, string>()
   for (const h of holidays) {
     holidayMap.set(h.date, h.name)
   }
+
+  const compensatorySet = new Set(compensatoryDays ?? [])
 
   const days: DayInfo[] = []
   const start = new Date(year, 0, 1)
@@ -35,6 +33,7 @@ export function buildYearCalendar(
       isSunday,
       isHoliday: holidayName !== null,
       holidayName,
+      isCompensatory: compensatorySet.has(key),
       dayOfYear: doy,
     })
   }
@@ -43,7 +42,7 @@ export function buildYearCalendar(
 }
 
 export function isNonWorkingDay(day: DayInfo): boolean {
-  return day.isSunday || day.isHoliday
+  return day.isSunday || day.isHoliday || day.isCompensatory
 }
 
 export function getConsecutiveNonWorkingBefore(
@@ -75,7 +74,7 @@ export function getConsecutiveNonWorkingAfter(
 export function isStartDateValid(days: DayInfo[], startDayOfYear: number): boolean {
   if (startDayOfYear < 0 || startDayOfYear >= days.length) return false
   if (isNonWorkingDay(days[startDayOfYear])) return false
-  if (startDayOfYear - 1 >= 0 && isNonWorkingDay(days[startDayOfYear - 1])) return false
-  if (startDayOfYear - 2 >= 0 && isNonWorkingDay(days[startDayOfYear - 2])) return false
+  if (startDayOfYear + 1 < days.length && isNonWorkingDay(days[startDayOfYear + 1])) return false
+  if (startDayOfYear + 2 < days.length && isNonWorkingDay(days[startDayOfYear + 2])) return false
   return true
 }
