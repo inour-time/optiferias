@@ -146,6 +146,43 @@ select.form-input {
   margin-top: 4px;
 }
 
+/* Compensatory days */
+.form-compensatory-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.form-compensatory-input {
+  flex: 1;
+  height: 40px;
+  font-size: 13px;
+}
+
+.form-compensatory-btn {
+  height: 40px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #fff;
+  background: #1D6F42;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.form-compensatory-btn:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.form-compensatory-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* Submit button */
 .form-btn {
   width: 100%;

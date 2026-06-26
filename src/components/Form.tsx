@@ -10,11 +10,13 @@ function todayStr(): string {
 }
 
 interface FormProps {
-  onCalculate: (balance: number, year: number, state: string, city: string, fromDate: string, splits: SplitPattern[]) => void
+  onCalculate: (balance: number, year: number, state: string, city: string, fromDate: string, splits: SplitPattern[], compensatoryDays: string[]) => void
   loading: boolean
+  compensatoryDays: string[]
+  onCompensatoryDaysChange: (days: string[]) => void
 }
 
-export default function Form({ onCalculate, loading }: FormProps) {
+export default function Form({ onCalculate, loading, compensatoryDays, onCompensatoryDaysChange }: FormProps) {
   const [balance, setBalance] = useState(30)
   const [year, setYear] = useState(2026)
   const [state, setState] = useState('MG')
@@ -24,6 +26,7 @@ export default function Form({ onCalculate, loading }: FormProps) {
   const [customInput, setCustomInput] = useState('')
   const [customError, setCustomError] = useState<string | null>(null)
   const [customSplit, setCustomSplit] = useState<SplitPattern | null>(null)
+  const [compensatoryDateInput, setCompensatoryDateInput] = useState('')
   const userChangedSplits = useRef(false)
 
   const currentSplits = generateSplits(balance)
@@ -76,6 +79,17 @@ export default function Form({ onCalculate, loading }: FormProps) {
     setCustomError(null)
   }, [])
 
+  const addCompensatoryDay = useCallback(() => {
+    if (!compensatoryDateInput) return
+    if (compensatoryDays.includes(compensatoryDateInput)) return
+    onCompensatoryDaysChange([...compensatoryDays, compensatoryDateInput])
+    setCompensatoryDateInput('')
+  }, [compensatoryDateInput, compensatoryDays, onCompensatoryDaysChange])
+
+  const removeCompensatoryDay = useCallback((day: string) => {
+    onCompensatoryDaysChange(compensatoryDays.filter((d) => d !== day))
+  }, [compensatoryDays, onCompensatoryDaysChange])
+
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault()
@@ -87,9 +101,9 @@ export default function Form({ onCalculate, loading }: FormProps) {
       if (customSplit) splits.push(customSplit)
 
       if (splits.length === 0) return
-      onCalculate(balance, year, state, city.trim(), fromDate, splits)
+      onCalculate(balance, year, state, city.trim(), fromDate, splits, compensatoryDays)
     },
-    [balance, year, state, city, fromDate, currentSplits, selectedLabels, customSplit, onCalculate]
+    [balance, year, state, city, fromDate, currentSplits, selectedLabels, customSplit, onCalculate, compensatoryDays]
   )
 
   return (
@@ -175,6 +189,31 @@ export default function Form({ onCalculate, loading }: FormProps) {
             </div>
           </div>
         )}
+
+        <div className="form-group">
+          <label className="form-label">Dias compensados <span className="form-label-opt">(opcional)</span></label>
+          <div className="form-compensatory-row">
+            <input
+              type="date"
+              className="form-input form-compensatory-input"
+              value={compensatoryDateInput}
+              onChange={(e) => setCompensatoryDateInput(e.target.value)}
+            />
+            <button type="button" className="form-compensatory-btn" onClick={addCompensatoryDay} disabled={!compensatoryDateInput}>
+              Adicionar
+            </button>
+          </div>
+          {compensatoryDays.length > 0 && (
+            <div className="form-splits">
+              {compensatoryDays.map((day) => (
+                <span key={day} className="form-chip selected">
+                  <span>{day}</span>
+                  <button type="button" className="form-chip-remove" onClick={() => removeCompensatoryDay(day)}>&times;</button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
 
         <button type="submit" className="form-btn" disabled={loading || (selectedLabels.size === 0 && !customSplit)}>
           {loading ? 'Calculando...' : 'Calcular Melhores Datas'}

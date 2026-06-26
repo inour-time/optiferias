@@ -55,13 +55,14 @@ export async function optimize(
   city: string,
   topN: number = 10,
   fromDate?: string,
-  onStatus?: (msg: string) => void
+  onStatus?: (msg: string) => void,
+  compensatoryDays?: string[]
 ): Promise<Scenario[]> {
   onStatus?.('Buscando feriados...')
   const holidays: Holiday[] = await fetchHolidays(year, state, city)
 
   onStatus?.('Montando calendário...')
-  const days = buildYearCalendar(year, holidays)
+  const days = buildYearCalendar(year, holidays, compensatoryDays)
 
   let minDay = 0
   if (fromDate) {

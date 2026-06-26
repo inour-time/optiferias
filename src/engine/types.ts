@@ -9,6 +9,7 @@ export interface DayInfo {
   isSunday: boolean
   isHoliday: boolean
   holidayName: string | null
+  isCompensatory: boolean
   dayOfYear: number
 }
 

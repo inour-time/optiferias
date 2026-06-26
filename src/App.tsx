@@ -12,16 +12,17 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedRank, setSelectedRank] = useState(1)
+  const [compensatoryDays, setCompensatoryDays] = useState<string[]>([])
 
   const handleCalculate = useCallback(
-    async (balance: number, year: number, state: string, city: string, fromDate: string, splits: SplitPattern[]) => {
+    async (balance: number, year: number, state: string, city: string, fromDate: string, splits: SplitPattern[], compensatoryDays: string[]) => {
       setLoading(true)
       setError(null)
       setScenarios([])
       setSelectedRank(1)
 
       try {
-        const result = await optimize(balance, splits, year, state, city, 10, fromDate)
+        const result = await optimize(balance, splits, year, state, city, 10, fromDate, undefined, compensatoryDays)
         if (result.length === 0) {
           setError('Nenhum cenário encontrado. Tente outros parâmetros.')
         } else {
@@ -43,7 +44,7 @@ export default function App() {
           <span className="app-logo-icon">&#9670;</span>
           <span className="app-logo-text">OptiFérias</span>
         </div>
-        <Form onCalculate={handleCalculate} loading={loading} />
+        <Form onCalculate={handleCalculate} loading={loading} compensatoryDays={compensatoryDays} onCompensatoryDaysChange={setCompensatoryDays} />
       </aside>
 
       <main className="app-main">
