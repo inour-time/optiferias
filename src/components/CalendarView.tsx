@@ -68,6 +68,7 @@ export default function CalendarView({ scenarios, selectedRank, onSelectRank }: 
   const totalSpent = scenario.vacationDaysSpent
   const daysSaved = totalOff - totalSpent
   const isSingle = scenario.period2.length === 0
+  const hasSellKeep = scenario.sellDays > 0 || scenario.keepDays > 0
 
   function periodDesc(p: typeof scenario.period1): string {
     let parts: string[] = []
@@ -75,6 +76,13 @@ export default function CalendarView({ scenarios, selectedRank, onSelectRank }: 
     if (p.forwardExtension > 0) parts.push(`${p.forwardExtension} dia(s) depois`)
     const ext = parts.length > 0 ? ` (+ ${parts.join(', ')})` : ''
     return `${fmt(p.startDate)} por ${p.length} dias → ${p.breakDays} dias de descanso${ext}`
+  }
+
+  function fmtDate(dateStr: string): string {
+    if (!dateStr) return ''
+    const [y, m, d] = dateStr.split('-')
+    const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+    return `${parseInt(d)} ${meses[parseInt(m) - 1]} de ${y}`
   }
 
   return (
@@ -88,6 +96,35 @@ export default function CalendarView({ scenarios, selectedRank, onSelectRank }: 
           <span className="cv-headline-green"> — são {daysSaved} dias extras grátis!</span>
         )}
       </div>
+
+      {hasSellKeep && (
+        <div className="cv-sellkeep-bar">
+          <span className="cv-sellkeep-item">
+            <strong>{scenario.vacationDaysSpent}</strong> dias tirados
+          </span>
+          <span className="cv-sellkeep-sep">|</span>
+          <span className="cv-sellkeep-item">
+            <strong>{scenario.sellDays}</strong> dias vendidos
+          </span>
+          {scenario.keepDays > 0 && (
+            <>
+              <span className="cv-sellkeep-sep">|</span>
+              <span className="cv-sellkeep-item cv-sellkeep-keep">
+                <strong>{scenario.keepDays}</strong> dias guardados
+                {scenario.keepDeadline ? (
+                  <span className="cv-sellkeep-deadline">
+                    (válido até {fmtDate(scenario.keepDeadline)})
+                  </span>
+                ) : (
+                  <span className="cv-sellkeep-deadline cv-sellkeep-deadline-warn">
+                    (devem ser marcados antes do próximo período)
+                  </span>
+                )}
+              </span>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="cv-summary">
         <div className="cv-summary-item">

@@ -28,6 +28,13 @@ export interface PeriodResult {
   forwardExtension: number
 }
 
+export interface SellKeepConfig {
+  sellDays: number
+  keepDays: number
+  keepDeadline?: string
+  nextAquisitiveStart?: string
+}
+
 export interface Scenario {
   period1: PeriodResult
   period2: PeriodResult
@@ -36,6 +43,9 @@ export interface Scenario {
   vacationDaysSpent: number
   totalEfficiency: number
   rank: number
+  sellDays: number
+  keepDays: number
+  keepDeadline?: string
 }
 
 export interface AppState {

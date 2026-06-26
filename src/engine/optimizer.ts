@@ -3,6 +3,7 @@ import {
   PeriodResult,
   Scenario,
   Holiday,
+  SellKeepConfig,
 } from './types'
 import {
   buildYearCalendar,
@@ -56,7 +57,8 @@ export async function optimize(
   topN: number = 10,
   fromDate?: string,
   onStatus?: (msg: string) => void,
-  compensatoryDays?: string[]
+  compensatoryDays?: string[],
+  sellKeep?: SellKeepConfig
 ): Promise<Scenario[]> {
   onStatus?.('Buscando feriados...')
   const holidays: Holiday[] = await fetchHolidays(year, state, city)
@@ -83,6 +85,10 @@ export async function optimize(
     const topA = resultsA.slice(0, 10)
     const topB = resultsB.slice(0, 10)
 
+    const sellDays = sellKeep?.sellDays ?? 0
+    const keepDays = sellKeep?.keepDays ?? 0
+    const keepDeadline = sellKeep?.keepDeadline
+
     if (split.periodB === 0) {
       for (const ra of topA) {
         scenarios.push({
@@ -100,6 +106,9 @@ export async function optimize(
           vacationDaysSpent: ra.length,
           totalEfficiency: ra.efficiency,
           rank: 0,
+          sellDays,
+          keepDays,
+          keepDeadline,
         })
       }
     } else {
@@ -114,6 +123,9 @@ export async function optimize(
             totalEfficiency:
               (ra.breakDays + rb.breakDays) / (ra.length + rb.length),
             rank: 0,
+            sellDays,
+            keepDays,
+            keepDeadline,
           })
         }
       }

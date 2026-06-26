@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { generateSplits, parseCustomSplit } from '../engine/splits'
-import { SplitPattern, BRAZILIAN_STATES } from '../engine/types'
+import { SplitPattern, BRAZILIAN_STATES, SellKeepConfig } from '../engine/types'
 import CityInput from './CityInput'
 import './Form.css'
 
@@ -10,7 +10,7 @@ function todayStr(): string {
 }
 
 interface FormProps {
-  onCalculate: (balance: number, year: number, state: string, city: string, fromDate: string, splits: SplitPattern[], compensatoryDays: string[]) => void
+  onCalculate: (balance: number, year: number, state: string, city: string, fromDate: string, splits: SplitPattern[], compensatoryDays: string[], sellKeep?: SellKeepConfig) => void
   loading: boolean
   compensatoryDays: string[]
   onCompensatoryDaysChange: (days: string[]) => void
@@ -27,9 +27,15 @@ export default function Form({ onCalculate, loading, compensatoryDays, onCompens
   const [customError, setCustomError] = useState<string | null>(null)
   const [customSplit, setCustomSplit] = useState<SplitPattern | null>(null)
   const [compensatoryDateInput, setCompensatoryDateInput] = useState('')
+  const [sellDays, setSellDays] = useState(0)
+  const [keepDays, setKeepDays] = useState(0)
+  const [nextAquisitiveStart, setNextAquisitiveStart] = useState('')
   const userChangedSplits = useRef(false)
 
-  const currentSplits = generateSplits(balance)
+  const maxSell = Math.floor(balance / 3)
+  const takenDays = balance - sellDays - keepDays
+
+  const currentSplits = generateSplits(takenDays)
 
   useEffect(() => {
     if (currentSplits.length > 0 && selectedLabels.size === 0 && !userChangedSplits.current) {
@@ -44,7 +50,30 @@ export default function Form({ onCalculate, loading, compensatoryDays, onCompens
     setCustomInput('')
     setCustomSplit(null)
     setCustomError(null)
+    setSellDays(0)
+    setKeepDays(0)
   }, [])
+
+  const handleSellChange = useCallback((val: number) => {
+    userChangedSplits.current = false
+    const clamped = Math.max(0, Math.min(val, maxSell))
+    setSellDays(clamped)
+    setSelectedLabels(new Set())
+    setCustomInput('')
+    setCustomSplit(null)
+    setCustomError(null)
+  }, [maxSell])
+
+  const handleKeepChange = useCallback((val: number) => {
+    userChangedSplits.current = false
+    const maxKeep = Math.max(0, balance - sellDays - 5)
+    const clamped = Math.max(0, Math.min(val, maxKeep))
+    setKeepDays(clamped)
+    setSelectedLabels(new Set())
+    setCustomInput('')
+    setCustomSplit(null)
+    setCustomError(null)
+  }, [balance, sellDays])
 
   const toggleSplit = useCallback((label: string) => {
     userChangedSplits.current = true
@@ -63,7 +92,7 @@ export default function Form({ onCalculate, loading, compensatoryDays, onCompens
       setCustomError(null)
       return
     }
-    const result = parseCustomSplit(balance, val)
+    const result = parseCustomSplit(takenDays, val)
     if (result.error) {
       setCustomSplit(null)
       setCustomError(result.error)
@@ -71,7 +100,7 @@ export default function Form({ onCalculate, loading, compensatoryDays, onCompens
       setCustomSplit(result.split)
       setCustomError(null)
     }
-  }, [balance])
+  }, [takenDays])
 
   const removeCustom = useCallback(() => {
     setCustomInput('')
@@ -101,10 +130,28 @@ export default function Form({ onCalculate, loading, compensatoryDays, onCompens
       if (customSplit) splits.push(customSplit)
 
       if (splits.length === 0) return
-      onCalculate(balance, year, state, city.trim(), fromDate, splits, compensatoryDays)
+
+      let deadline: string | undefined
+      if (nextAquisitiveStart) {
+        const d = new Date(nextAquisitiveStart)
+        d.setDate(d.getDate() - 1)
+        deadline = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+      }
+
+      const sellKeep: SellKeepConfig = {
+        sellDays,
+        keepDays,
+        keepDeadline: deadline,
+        nextAquisitiveStart: nextAquisitiveStart || undefined,
+      }
+
+      onCalculate(balance, year, state, city.trim(), fromDate, splits, compensatoryDays, sellKeep)
     },
-    [balance, year, state, city, fromDate, currentSplits, selectedLabels, customSplit, onCalculate, compensatoryDays]
+    [balance, year, state, city, fromDate, currentSplits, selectedLabels, customSplit, onCalculate, compensatoryDays, sellDays, keepDays, nextAquisitiveStart]
   )
+
+  const showSellKeep = balance >= 10
+  const canTake = takenDays >= 5
 
   return (
     <form className="form" onSubmit={handleSubmit}>
@@ -122,6 +169,52 @@ export default function Form({ onCalculate, loading, compensatoryDays, onCompens
             onChange={(e) => handleBalanceChange(Number(e.target.value))}
           />
         </div>
+
+        {showSellKeep && (
+          <>
+            <div className="form-group">
+              <label className="form-label">Dias para vender <span className="form-label-opt">(máx. {maxSell})</span></label>
+              <input
+                type="number"
+                className="form-input"
+                min={0}
+                max={maxSell}
+                value={sellDays}
+                onChange={(e) => handleSellChange(Number(e.target.value))}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Dias para guardar</label>
+              <input
+                type="number"
+                className="form-input"
+                min={0}
+                max={Math.max(0, balance - sellDays - 5)}
+                value={keepDays}
+                onChange={(e) => handleKeepChange(Number(e.target.value))}
+              />
+            </div>
+
+            <div className="form-balance-summary">
+              <span className="form-balance-item">
+                <strong>{takenDays}</strong> dias para tirar
+              </span>
+              <span className="form-balance-sep">|</span>
+              <span className="form-balance-item">
+                <strong>{sellDays}</strong> vendidos
+              </span>
+              {keepDays > 0 && (
+                <>
+                  <span className="form-balance-sep">|</span>
+                  <span className="form-balance-item">
+                    <strong>{keepDays}</strong> guardados
+                  </span>
+                </>
+              )}
+            </div>
+          </>
+        )}
 
         <div className="form-group">
           <label className="form-label">Ano</label>
@@ -156,7 +249,13 @@ export default function Form({ onCalculate, loading, compensatoryDays, onCompens
           <CityInput state={state} value={city} onChange={setCity} />
         </div>
 
-        {currentSplits.length > 1 && (
+        {!canTake && showSellKeep && (
+          <div className="form-info-card">
+            <p>Com {sellDays} vendidos e {keepDays} guardados, restam apenas {takenDays} dias para tirar. O mínimo é 5 dias. Ajuste os valores acima.</p>
+          </div>
+        )}
+
+        {canTake && currentSplits.length > 1 && (
           <div className="form-group">
             <label className="form-label">Divisão das férias</label>
             <div className="form-splits">
@@ -190,6 +289,23 @@ export default function Form({ onCalculate, loading, compensatoryDays, onCompens
           </div>
         )}
 
+        {keepDays > 0 && (
+          <div className="form-group">
+            <label className="form-label">
+              Início do próximo período aquisitivo <span className="form-label-opt">(opcional)</span>
+            </label>
+            <input
+              type="date"
+              className="form-input"
+              value={nextAquisitiveStart}
+              onChange={(e) => setNextAquisitiveStart(e.target.value)}
+            />
+            <span className="form-hint">
+              Informe para calcular o prazo limite dos dias guardados
+            </span>
+          </div>
+        )}
+
         <div className="form-group">
           <label className="form-label">Dias compensados <span className="form-label-opt">(opcional)</span></label>
           <div className="form-compensatory-row">
@@ -215,7 +331,7 @@ export default function Form({ onCalculate, loading, compensatoryDays, onCompens
           )}
         </div>
 
-        <button type="submit" className="form-btn" disabled={loading || (selectedLabels.size === 0 && !customSplit)}>
+        <button type="submit" className="form-btn" disabled={loading || !canTake || (selectedLabels.size === 0 && !customSplit)}>
           {loading ? 'Calculando...' : 'Calcular Melhores Datas'}
         </button>
       </div>
