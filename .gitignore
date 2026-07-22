@@ -56,3 +56,6 @@ preplanning/
 
 # OpenCode
 opencode.json
+
+# Playwright MCP
+.playwright-mcp/

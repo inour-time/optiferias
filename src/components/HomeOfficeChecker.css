@@ -1,0 +1,194 @@
+.hoc-container {
+  background: #fff;
+  border: 1px solid #DADADA;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.hoc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.hoc-header:hover {
+  background: #f8f8f6;
+}
+
+.hoc-icon {
+  font-size: 12px;
+  color: #999;
+}
+
+.hoc-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.hoc-subtitle {
+  font-size: 12px;
+  color: #888;
+  margin-left: auto;
+}
+
+.hoc-body {
+  padding: 0 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hoc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hoc-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+}
+
+.hoc-select {
+  height: 38px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1A1A1A;
+  background: #fff;
+  border: 1px solid #DADADA;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.hoc-select:focus {
+  outline: none;
+  border-color: #1D6F42;
+}
+
+.hoc-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.hoc-date-input {
+  flex: 1;
+  height: 38px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1A1A1A;
+  background: #fff;
+  border: 1px solid #DADADA;
+  border-radius: 6px;
+}
+
+.hoc-date-input:focus {
+  outline: none;
+  border-color: #1D6F42;
+}
+
+.hoc-btn {
+  height: 38px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #fff;
+  background: #1D6F42;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.hoc-btn:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.hoc-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hoc-result {
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.hoc-result-presencial {
+  background: #FFE8E8;
+  color: #B91C1C;
+}
+
+.hoc-result-home {
+  background: #E8F5EE;
+  color: #1D6F42;
+}
+
+.hoc-period-weeks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hoc-period-btn {
+  background: none;
+  border: 1px solid #DADADA;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #666;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.hoc-period-btn:hover {
+  background: #f5f5f5;
+}
+
+.hoc-weeks-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hoc-week-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.hoc-week-presencial {
+  background: #FFE8E8;
+  color: #B91C1C;
+}
+
+.hoc-week-home {
+  background: #E8F5EE;
+  color: #1D6F42;
+}
+
+.hoc-week-label {
+  font-weight: 500;
+}
+
+.hoc-week-badge {
+  font-weight: 700;
+}

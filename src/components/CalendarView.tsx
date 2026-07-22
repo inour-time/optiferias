@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Scenario, DayInfo } from '../engine/types'
+import HomeOfficeChecker from './HomeOfficeChecker'
 import './CalendarView.css'
 
 const MONTHS = [
@@ -189,6 +190,15 @@ export default function CalendarView({ scenarios, days, selectedRank, onSelectRa
           ))}
         </select>
       </div>
+
+      <HomeOfficeChecker
+        periodStart={scenario.period1.startDate}
+        periodEnd={
+          scenario.period2.length > 0
+            ? new Date(scenario.period2.startDate.getTime() + (scenario.period2.length - 1) * 86400000)
+            : new Date(scenario.period1.startDate.getTime() + (scenario.period1.length - 1) * 86400000)
+        }
+      />
 
       <div className="cv-calendar">
         {months.map((m) => (
