@@ -43,6 +43,23 @@
   gap: 12px;
 }
 
+.hoc-description {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #555;
+  margin: 0;
+  padding: 8px 0 4px;
+}
+
+.hoc-developer {
+  font-size: 11px;
+  color: #aaa;
+  text-align: center;
+  margin: 12px 0 0;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
 .hoc-field {
   display: flex;
   flex-direction: column;

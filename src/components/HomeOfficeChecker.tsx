@@ -101,6 +101,13 @@ export default function HomeOfficeChecker({ periodStart, periodEnd }: HomeOffice
 
       {expanded && (
         <div className="hoc-body">
+          <p className="hoc-description">
+            Com base no regime da sua semana atual, esta calculadora determina
+            automaticamente se uma data futura será presencial ou home office,
+            seguindo o padrão de alternância quinzenal. Útil para planejar
+            seus dias de trabalho e períodos de descanso.
+          </p>
+
           <div className="hoc-field">
             <label className="hoc-label">Regime da sua semana atual:</label>
             <select
@@ -174,6 +181,8 @@ export default function HomeOfficeChecker({ periodStart, periodEnd }: HomeOffice
               )}
             </div>
           )}
+
+          <p className="hoc-developer">Desenvolvido por Hugo Garcia</p>
         </div>
       )}
     </div>
