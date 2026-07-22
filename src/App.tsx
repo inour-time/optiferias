@@ -4,12 +4,13 @@ import ResultList from './components/ResultList'
 import CalendarView from './components/CalendarView'
 import ErrorMessage from './components/ErrorMessage'
 import { optimize } from './engine/optimizer'
-import { SplitPattern, Scenario, SellKeepConfig } from './engine/types'
+import { SplitPattern, Scenario, DayInfo, SellKeepConfig } from './engine/types'
 import { loadKeptRecords, saveKeptRecord, updateKeptRecord, deleteKeptRecord, generateId, KeptDaysRecord } from './services/storage'
 import './App.css'
 
 export default function App() {
   const [scenarios, setScenarios] = useState<Scenario[]>([])
+  const [days, setDays] = useState<DayInfo[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedRank, setSelectedRank] = useState(1)
@@ -30,10 +31,11 @@ export default function App() {
 
       try {
         const result = await optimize(balance, splits, year, state, city, 10, fromDate, undefined, compensatoryDays, sellKeep)
-        if (result.length === 0) {
+        if (result.scenarios.length === 0) {
           setError('Nenhum cenário encontrado. Tente outros parâmetros.')
         } else {
-          setScenarios(result)
+          setScenarios(result.scenarios)
+          setDays(result.days)
           if (sellKeep && sellKeep.keepDays > 0) {
             const record: KeptDaysRecord = {
               id: generateId(),
@@ -173,6 +175,7 @@ export default function App() {
             {selectedRank > 0 && (
               <CalendarView
                 scenarios={scenarios}
+                days={days}
                 selectedRank={selectedRank}
                 onSelectRank={setSelectedRank}
               />

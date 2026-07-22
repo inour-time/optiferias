@@ -3,6 +3,7 @@ import {
   PeriodResult,
   Scenario,
   Holiday,
+  DayInfo,
   SellKeepConfig,
 } from './types'
 import {
@@ -59,7 +60,7 @@ export async function optimize(
   onStatus?: (msg: string) => void,
   compensatoryDays?: string[],
   sellKeep?: SellKeepConfig
-): Promise<Scenario[]> {
+): Promise<{ scenarios: Scenario[]; days: DayInfo[] }> {
   onStatus?.('Buscando feriados...')
   const holidays: Holiday[] = await fetchHolidays(year, state, city)
 
@@ -138,5 +139,5 @@ export async function optimize(
     return b.totalBreakDays - a.totalBreakDays
   })
 
-  return scenarios.slice(0, topN).map((s, i) => ({ ...s, rank: i + 1 }))
+  return { scenarios: scenarios.slice(0, topN).map((s, i) => ({ ...s, rank: i + 1 })), days }
 }
