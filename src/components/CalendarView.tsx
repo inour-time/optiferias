@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
-import { Scenario } from '../engine/types'
+import { Scenario, DayInfo } from '../engine/types'
+import HomeOfficeChecker from './HomeOfficeChecker'
 import './CalendarView.css'
 
 const MONTHS = [
@@ -20,11 +21,12 @@ function fmt(d: Date): string {
 
 interface CalendarViewProps {
   scenarios: Scenario[]
+  days: DayInfo[]
   selectedRank: number
   onSelectRank: (rank: number) => void
 }
 
-export default function CalendarView({ scenarios, selectedRank, onSelectRank }: CalendarViewProps) {
+export default function CalendarView({ scenarios, days, selectedRank, onSelectRank }: CalendarViewProps) {
   const scenario = scenarios.find((s) => s.rank === selectedRank) ?? scenarios[0]
 
   const markedDates = useMemo(() => {
@@ -43,26 +45,38 @@ export default function CalendarView({ scenarios, selectedRank, onSelectRank }: 
     return set
   }, [scenario])
 
+  const dayInfoMap = useMemo(() => {
+    const map = new Map<string, DayInfo>()
+    for (const d of days) {
+      map.set(dateKey(d.date), d)
+    }
+    return map
+  }, [days])
+
   const year = scenario.period1.startDate.getFullYear()
 
   const months = useMemo(() => {
     return Array.from({ length: 12 }, (_, mi) => {
       const firstDay = new Date(year, mi, 1).getDay()
       const daysInMonth = new Date(year, mi + 1, 0).getDate()
-      const cells: { day: number; isMarked: boolean; isWeekend: boolean }[] = []
-      for (let i = 0; i < firstDay; i++) cells.push({ day: 0, isMarked: false, isWeekend: false })
+      const cells: { day: number; isMarked: boolean; isWeekend: boolean; isHoliday: boolean; holidayName: string | null }[] = []
+      for (let i = 0; i < firstDay; i++) cells.push({ day: 0, isMarked: false, isWeekend: false, isHoliday: false, holidayName: null })
       for (let d = 1; d <= daysInMonth; d++) {
         const date = new Date(year, mi, d)
         const dow = date.getDay()
+        const key = dateKey(date)
+        const info = dayInfoMap.get(key)
         cells.push({
           day: d,
-          isMarked: markedDates.has(dateKey(date)),
+          isMarked: markedDates.has(key),
           isWeekend: dow === 0 || dow === 6,
+          isHoliday: info?.isHoliday ?? false,
+          holidayName: info?.holidayName ?? null,
         })
       }
       return { index: mi, name: MONTHS[mi], cells }
     })
-  }, [year, markedDates])
+  }, [year, markedDates, dayInfoMap])
 
   const totalOff = scenario.totalBreakDays
   const totalSpent = scenario.vacationDaysSpent
@@ -177,6 +191,15 @@ export default function CalendarView({ scenarios, selectedRank, onSelectRank }: 
         </select>
       </div>
 
+      <HomeOfficeChecker
+        periodStart={scenario.period1.startDate}
+        periodEnd={
+          scenario.period2.length > 0
+            ? new Date(scenario.period2.startDate.getTime() + (scenario.period2.length - 1) * 86400000)
+            : new Date(scenario.period1.startDate.getTime() + (scenario.period1.length - 1) * 86400000)
+        }
+      />
+
       <div className="cv-calendar">
         {months.map((m) => (
           <div key={m.index} className="cv-month">
@@ -190,7 +213,8 @@ export default function CalendarView({ scenarios, selectedRank, onSelectRank }: 
               {m.cells.map((cell, i) => (
                 <span
                   key={i}
-                  className={`cv-day ${cell.isMarked ? 'marked' : ''} ${cell.isWeekend && !cell.isMarked ? 'weekend' : ''} ${cell.day === 0 ? 'empty' : ''}`}
+                  className={`cv-day ${cell.isMarked ? 'marked' : ''} ${cell.isHoliday && !cell.isMarked ? 'holiday' : ''} ${!cell.isHoliday && !cell.isMarked && cell.isWeekend ? 'weekend' : ''} ${cell.day === 0 ? 'empty' : ''}`}
+                  title={cell.holidayName ?? undefined}
                 >
                   {cell.day > 0 ? cell.day : ''}
                 </span>
@@ -203,6 +227,9 @@ export default function CalendarView({ scenarios, selectedRank, onSelectRank }: 
       <div className="cv-legend">
         <span className="cv-legend-item">
           <span className="cv-legend-dot marked" /> Férias
+        </span>
+        <span className="cv-legend-item">
+          <span className="cv-legend-dot holiday" /> Feriado
         </span>
         <span className="cv-legend-item">
           <span className="cv-legend-dot weekend" /> Fim de semana

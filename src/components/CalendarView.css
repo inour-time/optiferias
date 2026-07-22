@@ -191,8 +191,9 @@
   font-size: 11px;
   text-align: center;
   padding: 3px 0;
-  color: #444;
+  color: #333;
   border-radius: 4px;
+  cursor: default;
 }
 
 .cv-day.empty {
@@ -200,7 +201,14 @@
 }
 
 .cv-day.weekend {
-  color: #ccc;
+  color: #bbb;
+  background: #fafafa;
+}
+
+.cv-day.holiday {
+  background: #FFF3E0;
+  color: #E65100;
+  font-weight: 600;
 }
 
 .cv-day.marked {
@@ -239,9 +247,14 @@
   border-color: #1D6F42;
 }
 
+.cv-legend-dot.holiday {
+  background: #FFE0B2;
+  border-color: #FF9800;
+}
+
 .cv-legend-dot.weekend {
-  background: #f5f5f5;
-  border-color: #e0e0e0;
+  background: #e8e8e8;
+  border-color: #ccc;
 }
 
 .cv-sellkeep-bar {
