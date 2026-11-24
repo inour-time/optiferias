@@ -1,10 +1,8 @@
 import { Holiday } from './types'
 import { MUNICIPAL_HOLIDAYS } from '../data/municipios'
 
-const NATIONAL_HOLIDAYS_2025: Record<string, string> = {
-  '01-01': 'Ano Novo',
-  '04-18': 'Sexta-feira Santa',
-  '04-20': 'Páscoa',
+const FIXED_NATIONAL_HOLIDAYS: Record<string, string> = {
+  '01-01': 'Confraternização Universal',
   '04-21': 'Tiradentes',
   '05-01': 'Dia do Trabalho',
   '09-07': 'Independência do Brasil',
@@ -15,22 +13,53 @@ const NATIONAL_HOLIDAYS_2025: Record<string, string> = {
   '12-25': 'Natal',
 }
 
-const NATIONAL_HOLIDAYS_2026: Record<string, string> = {
-  '01-01': 'Confraternização Universal',
-  '02-16': 'Carnaval (segunda)',
-  '02-17': 'Carnaval (terça)',
-  '02-18': 'Quarta-feira de Cinzas',
-  '04-03': 'Sexta-feira Santa',
-  '04-05': 'Páscoa',
-  '04-21': 'Tiradentes',
-  '05-01': 'Dia do Trabalho',
-  '06-04': 'Corpus Christi',
-  '09-07': 'Independência do Brasil',
-  '10-12': 'Nossa Sra. Aparecida',
-  '11-02': 'Finados',
-  '11-15': 'Proclamação da República',
-  '11-20': 'Dia da Consciência Negra',
-  '12-25': 'Natal',
+// Feriados móveis, em dias relativos ao domingo de Páscoa
+const EASTER_BASED_HOLIDAYS: Array<[number, string]> = [
+  [-48, 'Carnaval (segunda)'],
+  [-47, 'Carnaval (terça)'],
+  [-46, 'Quarta-feira de Cinzas'],
+  [-2, 'Sexta-feira Santa'],
+  [0, 'Páscoa'],
+  [60, 'Corpus Christi'],
+]
+
+// Algoritmo de Meeus/Jones/Butcher (calendário gregoriano)
+function easterSunday(year: number): Date {
+  const a = year % 19
+  const b = Math.floor(year / 100)
+  const c = year % 100
+  const d = Math.floor(b / 4)
+  const e = b % 4
+  const f = Math.floor((b + 8) / 25)
+  const g = Math.floor((b - f + 1) / 3)
+  const h = (19 * a + b - d - g + 15) % 30
+  const i = Math.floor(c / 4)
+  const k = c % 4
+  const l = (32 + 2 * e + 2 * i - h - k) % 7
+  const m = Math.floor((a + 11 * h + 22 * l) / 451)
+  const month = Math.floor((h + l - 7 * m + 114) / 31)
+  const day = ((h + l - 7 * m + 114) % 31) + 1
+  return new Date(Date.UTC(year, month - 1, day))
+}
+
+export function getNationalHolidays(year: number): Holiday[] {
+  const holidays: Holiday[] = []
+  const easter = easterSunday(year)
+
+  for (const [offset, name] of EASTER_BASED_HOLIDAYS) {
+    const d = new Date(easter.getTime() + offset * 86400000)
+    holidays.push({
+      date: `${year}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`,
+      name,
+      type: 'national',
+    })
+  }
+
+  for (const [mmdd, name] of Object.entries(FIXED_NATIONAL_HOLIDAYS)) {
+    holidays.push({ date: `${year}-${mmdd}`, name, type: 'national' })
+  }
+
+  return holidays.sort((x, y) => x.date.localeCompare(y.date))
 }
 
 const STATE_HOLIDAYS: Record<string, Record<string, string>> = {
@@ -124,16 +153,7 @@ export async function fetchHolidays(
   state: string,
   city: string
 ): Promise<Holiday[]> {
-  const holidays: Holiday[] = []
-
-  const nationalMap = year === 2025 ? NATIONAL_HOLIDAYS_2025 : NATIONAL_HOLIDAYS_2026
-  for (const [mmdd, name] of Object.entries(nationalMap)) {
-    holidays.push({
-      date: `${year}-${mmdd}`,
-      name,
-      type: 'national',
-    })
-  }
+  const holidays: Holiday[] = getNationalHolidays(year)
 
   if (state && STATE_HOLIDAYS[state]) {
     for (const [mmdd, name] of Object.entries(STATE_HOLIDAYS[state])) {
@@ -144,49 +164,48 @@ export async function fetchHolidays(
     }
   }
 
-  const apiKey = import.meta.env.VITE_FERIADOS_API_KEY as string | undefined
-  if (apiKey && apiKey.length > 0) {
-    try {
-      const url = state
-        ? `https://feriadosapi.com/api/v1/feriados/estado/${state}?ano=${year}`
-        : `https://feriadosapi.com/api/v1/feriados/nacionais?ano=${year}`
+  // A feriadosapi.com não libera CORS e a chave não pode ir para o bundle,
+  // então a consulta passa pela função serverless /api/feriados (Vercel).
+  try {
+    const params = new URLSearchParams({ ano: String(year) })
+    if (state) params.set('uf', state)
 
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${apiKey}` },
-      })
+    const res = await fetch(`/api/feriados?${params}`, {
+      signal: AbortSignal.timeout(8000),
+    })
 
-      if (res.ok) {
-        const data = await res.json()
-        const apiHolidays = data.feriados ?? data ?? []
+    const isJson = res.headers.get('content-type')?.includes('application/json')
+    if (res.ok && isJson) {
+      const data = await res.json()
+      const apiHolidays = data.feriados ?? data ?? []
 
-        for (const h of Array.isArray(apiHolidays) ? apiHolidays : []) {
-          const dateParts = h.data?.split('/')
-          let dateStr: string
-          if (dateParts?.length === 3) {
-            dateStr = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`
-          } else if (h.data?.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            dateStr = h.data
-          } else {
-            continue
-          }
+      for (const h of Array.isArray(apiHolidays) ? apiHolidays : []) {
+        const dateParts = h.data?.split('/')
+        let dateStr: string
+        if (dateParts?.length === 3) {
+          dateStr = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`
+        } else if (h.data?.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          dateStr = h.data
+        } else {
+          continue
+        }
 
-          const existing = holidays.find((x) => x.date === dateStr)
-          if (existing) {
-            existing.name = h.nome ?? h.name ?? existing.name
-          } else {
-            holidays.push({
-              date: dateStr,
-              name: h.nome ?? h.name ?? 'Feriado',
-              type: (h.tipo ?? '').toLowerCase().includes('estadual')
-                ? 'state'
-                : 'national',
-            })
-          }
+        const existing = holidays.find((x) => x.date === dateStr)
+        if (existing) {
+          existing.name = h.nome ?? h.name ?? existing.name
+        } else {
+          holidays.push({
+            date: dateStr,
+            name: h.nome ?? h.name ?? 'Feriado',
+            type: (h.tipo ?? '').toLowerCase().includes('estadual')
+              ? 'state'
+              : 'national',
+          })
         }
       }
-    } catch {
-      // API indisponível, usar fallback local
     }
+  } catch {
+    // API indisponível (ex.: dev local sem a função serverless), usar fallback local
   }
 
   if (city) {
