@@ -41,19 +41,17 @@ npm run build
 
 ## API de feriados (opcional)
 
-Por padrão o sistema usa um dataset local de feriados. Para dados mais precisos (especialmente feriados estaduais), configure uma chave da [feriadosapi.com](https://feriadosapi.com):
+Por padrão o sistema calcula os feriados nacionais (inclusive os móveis, a partir da Páscoa) para qualquer ano e usa um dataset local para estaduais e municipais. Para dados mais precisos (especialmente feriados estaduais), configure uma chave da [feriadosapi.com](https://feriadosapi.com).
 
-```bash
-cp .env.example .env
-# Edite .env e adicione sua chave:
-# VITE_FERIADOS_API_KEY=fapi_sua_chave_aqui
-```
+A feriadosapi.com não libera CORS, então o navegador consulta a função serverless `api/feriados.ts`, que chama a API com a chave guardada no servidor. Configure a variável **`FERIADOS_API_KEY`** (sem prefixo `VITE_`) nas Environment Variables do projeto na Vercel. Para testar localmente com a função, use `vercel dev` com a chave no `.env`. Com `npm run dev`, o app usa apenas o fallback local.
 
 O plano gratuito cobre feriados nacionais, estaduais e das 27 capitais (60 req/min).
 
 ## Estrutura
 
 ```
+api/
+└── feriados.ts        # Função serverless (Vercel): proxy para a feriadosapi.com
 src/
 ├── components/        # UI (Form, ResultCard, CalendarView, CityInput...)
 ├── engine/            # Motor de cálculo (splits, calendário, otimizador, API)
